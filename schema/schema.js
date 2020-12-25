@@ -25,7 +25,7 @@ const UserType = new GraphQLObjectType({
             }
         },
         hobbies: {
-            type: new GraphQLList(HoobyType),
+            type: new GraphQLList(HobbyType),
             resolve(parent, args) {
                 return _.filter(hobbiesData, { userId: parent.id })
             }
@@ -50,7 +50,7 @@ const PostType = new GraphQLObjectType({
     })
 })
 
-const HoobyType = new GraphQLObjectType({
+const HobbyType = new GraphQLObjectType({
     name: 'Hobby',
     description: 'Hobby Desc',
     fields: () => ({
@@ -89,14 +89,14 @@ const RootQuery = new GraphQLObjectType({
             }
         },
         hobby: {
-            type: HoobyType,
+            type: HobbyType,
             args: { id: { type: GraphQLString } },
             resolve(parent, args) {
                 return Hobby.findById(args.id);
             }
         },
         hobbies: {
-            type: new GraphQLList(HoobyType),
+            type: new GraphQLList(HobbyType),
             resolve(parent, args) {
                 return Hobby.find({});
             }
@@ -162,12 +162,12 @@ const Mutation = new GraphQLObjectType({
             }
         },
         createHobby: {
-            type: HoobyType,
+            type: HobbyType,
             args: {
                 //id
-                title: { type: GraphQLNonNull(GraphQLString) },
-                description: { type: GraphQLNonNull(GraphQLString) },
-                userId: { type: GraphQLNonNull(GraphQLString) }
+                title: { type: new GraphQLNonNull(GraphQLString) },
+                description: { type: new GraphQLNonNull(GraphQLString) },
+                userId: { type: new GraphQLNonNull(GraphQLString) }
             },
             resolve(parent, args) {
                 let hobby = new Hobby({
@@ -180,8 +180,63 @@ const Mutation = new GraphQLObjectType({
                 catch (err) { conesole.log('post save error::' + err); }
                 return hobby;
             }
+        },
+        updateUser: {
+            type: UserType,
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLString) },
+                name: { type: new GraphQLNonNull(GraphQLString) },
+                age: { type: GraphQLInt },
+                profession: { type: GraphQLString }
+            },
+            resolve(parent, args) {
+                return updatedUsers = User.findByIdAndUpdate(args.id, {
+                    $set: {
+                        name: args.name,
+                        age: args.age,
+                        profession: args.profession
+                    }
+                },
+                    { new: true }
+                )
+            }
+        },
+        updatePost: {
+            type: PostType,
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLString) },
+                comment: { type: new GraphQLNonNull(GraphQLString) },
+                // userId: { type: GraphQLString }
+            },
+            resolve(parent, args) {
+                return updatedPosts = Post.findByIdAndUpdate(args.id, {
+                    $set: {
+                        comment: args.comment,
+                    }
+                },
+                    { new: true }
+                )
+            }
+        },
+        updateHobby: {
+            type: HobbyType,
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLString) },
+                title: { type: new GraphQLNonNull(GraphQLString) },
+                description: { type: GraphQLString },
+                userId: { type: GraphQLString }
+            },
+            resolve(parent, args) {
+                return updtedHobies = Hobby.findByIdAndUpdate(args.id, {
+                    $set: {
+                        title: args.title,
+                        description: args.description
+                    }
+                }, { new: true })
+            }
         }
     }
+
 })
 
 module.exports = new GraphQLSchema({
