@@ -1,5 +1,8 @@
 const graphql = require('graphql');
 const _ = require('lodash');
+const User = require('../model/user');
+const Hobby = require('../model/hobby');
+const Post = require('../model/post');
 
 const { GraphQLObjectType, GraphQLId, GraphQLString, GraphQLInt, GraphQLSchema, GraphQLList } = graphql
 
@@ -113,7 +116,7 @@ const RootQuery = new GraphQLObjectType({
         hobbies: {
             type: new GraphQLList(HoobyType),
             resolve(parent, args) {
-                return hobbiesData
+                // return hobbiesData
             }
 
         },
@@ -121,13 +124,13 @@ const RootQuery = new GraphQLObjectType({
             type: PostType,
             args: { id: { type: GraphQLString } },
             resolve(parent, args) {
-                return _.find(postData, { 'id': args.id })
+                //return _.find(postData, { 'id': args.id })
             }
         },
         posts: {
             type: new GraphQLList(PostType),
             resolve(parent, args) {
-                return postData
+                // return postData
             }
         }
     }
@@ -146,11 +149,16 @@ const Mutation = new GraphQLObjectType({
                 profession: { type: GraphQLString }
             },
             resolve(parent, args) {
-                let user = {
+                let user = new User({
                     name: args.name,
-                    age: args.name,
+                    age: args.age,
                     profession: args.profession
-                }
+                });
+                user.save().then(result => {
+                    console.log('user result=>' + result);
+                }).catch(err => {
+                    console.log('Error Message' + JSON.stringify(err));
+                })
                 return user;
             }
         },
@@ -161,10 +169,13 @@ const Mutation = new GraphQLObjectType({
                 userId: { type: GraphQLString }
             },
             resolve(parent, args) {
-                let post = {
+                let post = new Post({
                     comment: args.comment,
                     userId: args.userId
-                }
+                })
+                console.log('args.post::' + JSON.stringify(post));
+                try { let result = post.save(); }
+                catch (err) { conesole.log('post save error::' + err); }
                 return post;
             }
         },
@@ -177,11 +188,14 @@ const Mutation = new GraphQLObjectType({
                 userId: { type: GraphQLString }
             },
             resolve(parent, args) {
-                let hobby = {
+                let hobby = new Hobby({
                     title: args.title,
-                    title: args.description,
+                    description: args.description,
                     userId: args.userId
-                }
+                })
+                console.log('JSON Stringfy::' + JSON.stringify(hobby));
+                try { let result = hobby.save(); }
+                catch (err) { conesole.log('post save error::' + err); }
                 return hobby;
             }
         }
